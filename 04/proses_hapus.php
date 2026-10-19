@@ -24,3 +24,4 @@ if (!empty($npm)) {
 // Redirect kembali ke halaman utama
 header('Location: index.php#daftar-mahasiswa');
 exit;
+

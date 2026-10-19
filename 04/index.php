@@ -9,11 +9,11 @@
 require_once __DIR__ . '/includes/functions.php';
 
 // Ambil keyword pencarian jika ada
-$page_title = 'Uji Fungsi Modular Percobaan 1';
-$daftar_mahasiswa = get_all_mahasiswa($keyword = isset($_GET['search']) ? trim($_GET['search']) : '');
-$total_semua = count_total_mahasiswa();
 
 // Percobaan 4-4 Langkah 2
+$keyword = isset($_GET['search']) ? trim($_GET['search']) : '';
+$daftar_mahasiswa = get_all_mahasiswa($keyword);
+
 
 $total_semua = count_total_mahasiswa();
 $total_tampil = count($daftar_mahasiswa);
@@ -21,10 +21,13 @@ $total_tampil = count($daftar_mahasiswa);
 // Ambil flash message dari session jika tersedia
 $flash = get_flash_message();
 
-
-
 $page_title = 'Beranda - Sistem Informasi Data Mahasiswa';
+
 require_once __DIR__ . '/includes/header.php';
+
+//$page_title = 'Uji Fungsi Modular - Percobaan 1';
+//$daftar_mahasiswa = get_all_mahasiswa();
+//$total_semua = count_total_mahasiswa();
 ?>
 
 <!-- Kotak Flash Message (Feedback Sukses / Error dari Server) -->
@@ -79,15 +82,15 @@ require_once __DIR__ . '/includes/header.php';
                 name="search" 
                 class="search-input" 
                 placeholder="Cari berdasarkan npm, Nama, atau Prodi..."
-                value="<?= htmlspecialchars($keyword = isset($_GET['search']) ? trim($_GET['search']) : '') ?>">
+                value="<?= htmlspecialchars($keyword) ?>">
             <button type="submit" class="btn btn-primary btn-sm">Cari</button>
-            <?php if (!empty($keyword = isset($_GET['search']) ? trim($_GET['search']) : '')): ?>
+            <?php if (!empty($keyword)): ?>
                 <a href="index.php#daftar-mahasiswa" class="btn btn-secondary btn-sm">Reset</a>
             <?php endif; ?>
         </form>
 
         <div class="status-summary">
-            <?php if (!empty($keyword = isset($_GET['search']) ? trim($_GET['search']) : '')): ?>
+            <?php if (!empty($keyword)): ?>
                 Ditemukan <?= $total_tampil ?> dari total <?= $total_semua ?> mahasiswa
             <?php else: ?>
                 Menampilkan <?= $total_semua ?> mahasiswa
@@ -108,15 +111,14 @@ require_once __DIR__ . '/includes/header.php';
                     <th>Angkatan</th>
                     <th>Email</th>
                     <th>Aksi</th>
-                </tr>
+                </tr> 
             </thead>
             <tbody>
                 <?php if (empty($daftar_mahasiswa)): ?>
-                    <tr>
-                        <td colspan="8" class="empty-row" <?=!empty($keyword = isset($_GET['search']) ? trim($_GET['search']) : '')? 'tidak ditemukan data mahasiswa dengan kata kunci "' . htmlspecialchars($keyword = isset($_GET['search']) ? trim($_GET['search']) : '') . '".' : 'Belum ada data mahasiswa yang terimpan' ?></td>
-                    </tr>
                     <!-- Percobaan 4-2 Langkah 4 -->
-                    
+                    <tr>
+                        <td colspan="8" class="empty-row"><?= !empty($keyword) ? 'Tidak ditemukan data mahasiswa dengan kata kunci "'.$keyword . '".' : 'Belum ada data mahasiswa yang tersimpan.' ?></td>
+                    </tr>
                 <?php else: ?>
 
                     <!-- Percobaan 4-2 Langkah 3 -->
@@ -127,13 +129,13 @@ require_once __DIR__ . '/includes/header.php';
                                 <img src="img/avatar-default.svg" alt="Foto <?= htmlspecialchars($mhs['nama']) ?>" class="avatar-img" width="36" height="36">
                             </td>
                             <td><strong><?= htmlspecialchars($mhs['npm']) ?></strong></td>
-                            <td><?= htmlspecialchars($mhs['nama']) ?></td>
-                            <td><span class="badge"><?= htmlspecialchars($mhs['program_studi']) ?></span></td>
-                            <td><?= $mhs['angkatan'] ?></td>
-                            <td><a href="mailto:<?= htmlspecialchars($mhs['email']) ?>" class="link-email"><?= htmlspecialchars($mhs['email']) ?></a></td>
+                              <td><?= htmlspecialchars($mhs['nama']) ?></td>
+                                <td><span class="badge"><?= htmlspecialchars($mhs['program_studi']) ?></span></td>
+                              <td><?= htmlspecialchars($mhs['angkatan']) ?></td>
+                             <td><a href="mailto:<?= htmlspecialchars($mhs['email']) ?>" class="link-email"><?= htmlspecialchars($mhs['email']) ?></a></td>
                             <td>
                                 <!-- Percobaan 4-2 Langkah 5 -->
-                                <a href="proses_hapus.php?npm=<?= urlencode($mhs['npm']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus data mahasiswa: <?= htmlspecialchars(addslashes($mhs['nama'])) ?> (npm: <?= htmlspecialchars($mhs['npm']) ?>)?')">Hapus</a>
+                                <a href="proses_hapus.php?npm=<?= urlencode($mhs['npm']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus data mahasiswa: <?=htmlspecialchars(addslashes($mhs['nama'])) ?> (npm: <?= htmlspecialchars($mhs['npm']) ?>)?')">Hapus</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -229,3 +231,4 @@ require_once __DIR__ . '/includes/header.php';
 </section>
 
 <!-- memanggil file footer.php -->
+

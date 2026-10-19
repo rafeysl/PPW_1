@@ -17,18 +17,18 @@ function init_mahasiswa_session() {
     if (!isset($_SESSION['daftar_mahasiswa'])) {
         $_SESSION['daftar_mahasiswa'] = [
             [
-                'npm' => '210101001',
+                'npm' => '230101001',
                 'nama' => 'Ahmad Fauzi',
                 'program_studi' => 'Teknik Informatika',
                 'angkatan' => 2023,
                 'email' => 'ahmad.fauzi@example.com'
             ],
             [   
-                'npm' => '210101002',
+                'npm' => '230101002',
                 'nama' => 'Siti Nurhaliza',
                 'program_studi' => 'Sistem Informasi',
                 'angkatan' => 2023,
-                'email' => 'siti.rahma@example.com'
+                'email' => 'siti.nurhaliza@example.com'
             ],
             [
                 'npm' => '240101015',
@@ -55,18 +55,23 @@ function get_all_mahasiswa($keyword = '') {
     init_mahasiswa_session();
     $data = $_SESSION['daftar_mahasiswa'];
 
-    if (empty($keyword = isset($_GET['search']) ? trim($_GET['search']) : '')) {
+    if (empty($keyword)) {
         return $data;
     }
 
-    $keyword = strtolower(trim($keyword = isset($_GET['search']) ? trim($_GET['search']) : ''));
+    $keyword = strtolower(trim($keyword));
     $filtered = [];
 
     foreach ($data as $mhs) {
+        // Konversi paksa ke string agar tidak error pada strtolower di PHP 8+
+        $npm_str = strtolower((string) $mhs['npm']);
+        $nama_str = strtolower((string) $mhs['nama']);
+        $prodi_str = strtolower((string) $mhs['program_studi']);
+
         if (
-            str_contains(strtolower($mhs['npm']), $keyword = isset($_GET['search']) ? trim($_GET['search']) : '') || 
-            str_contains(strtolower($mhs['nama']), $keyword = isset($_GET['search']) ? trim($_GET['search']) : '') ||
-            str_contains(strtolower($mhs['program_studi']), $keyword = isset($_GET['search']) ? trim($_GET['search']) : '')
+            str_contains($npm_str, $keyword) || 
+            str_contains($nama_str, $keyword) ||
+            str_contains($prodi_str, $keyword)
         ) {
             $filtered[] = $mhs;
         }
@@ -98,48 +103,30 @@ function tambah_mahasiswa($npm, $nama, $program_studi, $angkatan, $email) {
 
     // Validasi Server-Side
     if (empty($npm) || empty($nama) || empty($program_studi) || empty($angkatan) || empty($email)) {
-        return [
-            'status' => false,
-            'message' => 'Semua kolom formulir wajib diisi!'
-        ];
+        return ['status' => false, 'message' => 'Semua kolom formulir wajib diisi!'];
     }
 
     if (!preg_match('/^[0-9]{8,12}$/', $npm)) {
-        return [
-            'status' => false,
-            'message' => 'npm harus berupa angka 8 hingga 12 digit!'
-        ];
+        return ['status' => false, 'message' => 'NPM harus berupa angka 8 hingga 12 digit!'];
     }
 
-    // Cek duplikasi npm
+    // Cek duplikasi NPM dengan casting string
     foreach ($_SESSION['daftar_mahasiswa'] as $mhs) {
-        if ($mhs['npm'] === $npm) {
-            return [
-                'status' => false,
-                'message' => 'npm sudah terdaftar! Harap gunakan npm lain.'
-            ];
+        if ((string) $mhs['npm'] === (string) $npm) {
+            return ['status' => false, 'message' => 'NPM sudah terdaftar! Harap gunakan NPM lain.'];
         }
     }
 
     if (strlen($nama) < 3) {
-        return [
-            'status' => false,
-            'message' => 'Nama lengkap minpmal 3 karakter!'
-        ];
+        return ['status' => false, 'message' => 'Nama lengkap minimal 3 karakter!'];
     }
 
     if ($angkatan < 2018 || $angkatan > 2026) {
-        return [
-            'status' => false,
-            'message' => 'Tahun angkatan harus berada antara 2018 hingga 2026!'
-        ];
+        return ['status' => false, 'message' => 'Tahun angkatan harus berada antara 2018 hingga 2026!'];
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        return [
-            'status' => false,
-            'message' => 'Format alamat email tidak valid!'
-        ];
+        return ['status' => false, 'message' => 'Format alamat email tidak valid!'];
     }
 
     // Tambahkan data baru ke array session
@@ -151,10 +138,7 @@ function tambah_mahasiswa($npm, $nama, $program_studi, $angkatan, $email) {
         'email' => $email
     ];
 
-    return [
-        'status' => true,
-        'message' => "Data mahasiswa {$nama} (npm: {$npm}) berhasil ditambahkan!"
-    ];
+    return ['status' => true, 'message' => "Data mahasiswa {$nama} (NPM: {$npm}) berhasil ditambahkan!"];
 }
 
 /**
@@ -162,12 +146,13 @@ function tambah_mahasiswa($npm, $nama, $program_studi, $angkatan, $email) {
  */
 function hapus_mahasiswa($npm) {
     init_mahasiswa_session();
-    $npm = sanitize($npm);
+    $npm = (string) sanitize($npm);
     $found = false;
     $namaDihapus = '';
 
     foreach ($_SESSION['daftar_mahasiswa'] as $index => $mhs) {
-        if ($mhs['npm'] === $npm) {
+        // Bandingkan dengan memaksa format string keduanya
+        if ((string) $mhs['npm'] === $npm) {
             $namaDihapus = $mhs['nama'];
             unset($_SESSION['daftar_mahasiswa'][$index]);
             // Re-index array
@@ -178,26 +163,17 @@ function hapus_mahasiswa($npm) {
     }
 
     if ($found) {
-        return [
-            'status' => true,
-            'message' => "Data mahasiswa {$namaDihapus} (npm: {$npm}) berhasil dihapus."
-        ];
+        return ['status' => true, 'message' => "Data mahasiswa {$namaDihapus} (NPM: {$npm}) berhasil dihapus."];
     }
 
-    return [
-        'status' => false,
-        'message' => "Data mahasiswa dengan npm {$npm} tidak ditemukan."
-    ];
+    return ['status' => false, 'message' => "Data mahasiswa dengan NPM {$npm} tidak ditemukan."];
 }
 
 /**
  * Set flash message untuk feedback notifikasi pengguna
  */
 function set_flash_message($type, $message) {
-    $_SESSION['flash'] = [
-        'type' => $type,
-        'message' => $message
-    ];
+    $_SESSION['flash'] = ['type' => $type, 'message' => $message];
 }
 
 /**
